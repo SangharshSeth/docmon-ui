@@ -16,7 +16,7 @@ import {
   ChevronUp,
   Server,
   Cpu,
-  Memory,
+  Database, // Replace Memory with Database
   HardDrive,
   Network,
   Clock
@@ -216,7 +216,7 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="text-sm">
                   <p className="text-xs text-muted-foreground mb-1 flex items-center">
-                    <Memory className="w-3 h-3 mr-1" />
+                    <Database className="w-3 h-3 mr-1" /> {/* Replace Memory with Database */}
                     Memory
                   </p>
                   <p>

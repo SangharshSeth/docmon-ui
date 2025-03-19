@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { dockerService } from "@/services/dockerService";
@@ -10,7 +9,7 @@ import {
   Pause, 
   Square,
   Cpu,
-  Memory,
+  Database,
   Clock
 } from "lucide-react";
 
@@ -83,7 +82,7 @@ const SystemInfo: React.FC = () => {
           unit="cores"
         />
         <StatDisplay 
-          icon={Memory}
+          icon={Database}
           label="Memory Usage"
           value={`${memUsed}/${memTotal}`}
           unit="GB"
