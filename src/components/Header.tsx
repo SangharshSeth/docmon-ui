@@ -1,23 +1,24 @@
 
 import React from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { dockerService } from "@/services/dockerService";
 
 const Header: React.FC = () => {
-  const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
   const refreshData = async () => {
     setIsRefreshing(true);
     try {
+      // Directly trigger a data refresh instead of using React Query
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["containers"] }),
-        queryClient.invalidateQueries({ queryKey: ["system-info"] })
+        dockerService.refreshContainers(),
+        dockerService.refreshSystemInfo()
       ]);
       toast.success("Data refreshed");
     } catch (err) {
       toast.error("Failed to refresh data");
+      console.error("Error refreshing data:", err);
     } finally {
       setIsRefreshing(false);
     }
