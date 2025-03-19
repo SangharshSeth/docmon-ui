@@ -1,5 +1,5 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+
+import React, { useState, useEffect } from "react";
 import { dockerService } from "@/services/dockerService";
 import StatDisplay from "./StatDisplay";
 import { 
@@ -14,10 +14,24 @@ import {
 } from "lucide-react";
 
 const SystemInfo: React.FC = () => {
-  const { data: systemInfo, isLoading } = useQuery({
-    queryKey: ["system-info"],
-    queryFn: () => dockerService.getSystemInfo(),
-  });
+  const [systemInfo, setSystemInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSystemInfo = async () => {
+      try {
+        setIsLoading(true);
+        const data = await dockerService.getSystemInfo();
+        setSystemInfo(data);
+      } catch (error) {
+        console.error("Failed to fetch system info:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSystemInfo();
+  }, []);
 
   if (isLoading) {
     return (

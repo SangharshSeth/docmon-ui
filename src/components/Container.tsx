@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { dockerService } from "@/services/dockerService";
-import type { DockerContainer, DockerLog } from "@/types/docker";
+import type { DockerContainer } from "@/types/docker";
 import { formatDistance } from "date-fns";
 import StatusBadge from "./StatusBadge";
 import ResourceUsage from "./ResourceUsage";
@@ -16,7 +16,7 @@ import {
   ChevronUp,
   Server,
   Cpu,
-  Database, // Replace Memory with Database
+  Database,
   HardDrive,
   Network,
   Clock
@@ -31,7 +31,9 @@ interface ContainerProps {
 const Container: React.FC<ContainerProps> = ({ container, className }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
-  const queryClient = useQueryClient();
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Format container info
   const name = container.names[0].replace(/^\//, "");
@@ -42,47 +44,57 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
   );
 
   // Fetch container logs
-  const { data: logs, isLoading: logsLoading } = useQuery({
-    queryKey: ["container-logs", container.id],
-    queryFn: () => dockerService.getContainerLogs(container.id),
-    enabled: showLogs,
-  });
+  const fetchLogs = async () => {
+    try {
+      setLogsLoading(true);
+      const logsData = await dockerService.getContainerLogs(container.id);
+      setLogs(logsData);
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   // Container actions
-  const startMutation = useMutation({
-    mutationFn: () => dockerService.startContainer(container.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["containers"] });
+  const handleStart = async () => {
+    try {
+      setIsActionLoading(true);
+      await dockerService.startContainer(container.id);
       toast.success(`Container ${name} started`);
-    },
-    onError: () => {
+      // In a real app, we would fetch the updated container state here
+    } catch (error) {
       toast.error(`Failed to start container ${name}`);
+    } finally {
+      setIsActionLoading(false);
     }
-  });
+  };
 
-  const stopMutation = useMutation({
-    mutationFn: () => dockerService.stopContainer(container.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["containers"] });
+  const handleStop = async () => {
+    try {
+      setIsActionLoading(true);
+      await dockerService.stopContainer(container.id);
       toast.success(`Container ${name} stopped`);
-    },
-    onError: () => {
+      // In a real app, we would fetch the updated container state here
+    } catch (error) {
       toast.error(`Failed to stop container ${name}`);
+    } finally {
+      setIsActionLoading(false);
     }
-  });
+  };
 
-  const restartMutation = useMutation({
-    mutationFn: () => dockerService.restartContainer(container.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["containers"] });
+  const handleRestart = async () => {
+    try {
+      setIsActionLoading(true);
+      await dockerService.restartContainer(container.id);
       toast.success(`Container ${name} restarted`);
-    },
-    onError: () => {
+      // In a real app, we would fetch the updated container state here
+    } catch (error) {
       toast.error(`Failed to restart container ${name}`);
+    } finally {
+      setIsActionLoading(false);
     }
-  });
-
-  const isLoading = startMutation.isPending || stopMutation.isPending || restartMutation.isPending;
+  };
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -93,15 +105,20 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
   };
 
   const toggleLogs = () => {
-    setShowLogs(!showLogs);
-    // Expand container when showing logs
-    if (!isExpanded && !showLogs) {
-      setIsExpanded(true);
+    const newShowLogs = !showLogs;
+    setShowLogs(newShowLogs);
+    
+    // Expand container when showing logs and fetch logs
+    if (newShowLogs) {
+      if (!isExpanded) {
+        setIsExpanded(true);
+      }
+      fetchLogs();
     }
   };
 
   // Format log timestamp
-  const formatLogTime = (isoTime: string) => {
+  const formatLogTime = (isoTime) => {
     const date = new Date(isoTime);
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
   };
@@ -111,15 +128,17 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
       <div className="container-header">
         <div className="flex items-center">
           <Server className="w-4 h-4 mr-2 text-muted-foreground" />
-          <h3 className="font-bold">{name}</h3>
+          <Link to={`/containers/${container.id}`} className="font-bold hover:underline">
+            {name}
+          </Link>
           <StatusBadge status={container.state} className="ml-3" />
         </div>
         <div className="flex items-center">
           {/* Container actions */}
           {container.state !== "running" && (
             <button
-              onClick={() => startMutation.mutate()}
-              disabled={isLoading}
+              onClick={handleStart}
+              disabled={isActionLoading}
               className="p-1.5 mr-1 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               title="Start"
             >
@@ -128,8 +147,8 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
           )}
           {container.state === "running" && (
             <button
-              onClick={() => stopMutation.mutate()}
-              disabled={isLoading}
+              onClick={handleStop}
+              disabled={isActionLoading}
               className="p-1.5 mr-1 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               title="Stop"
             >
@@ -137,11 +156,11 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
             </button>
           )}
           <button
-            onClick={() => restartMutation.mutate()}
-            disabled={isLoading || container.state !== "running"}
+            onClick={handleRestart}
+            disabled={isActionLoading || container.state !== "running"}
             className={cn(
               "p-1.5 mr-1 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors",
-              (isLoading || container.state !== "running") && "opacity-50 cursor-not-allowed"
+              (isActionLoading || container.state !== "running") && "opacity-50 cursor-not-allowed"
             )}
             title="Restart"
           >
@@ -216,7 +235,7 @@ const Container: React.FC<ContainerProps> = ({ container, className }) => {
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="text-sm">
                   <p className="text-xs text-muted-foreground mb-1 flex items-center">
-                    <Database className="w-3 h-3 mr-1" /> {/* Replace Memory with Database */}
+                    <Database className="w-3 h-3 mr-1" />
                     Memory
                   </p>
                   <p>
