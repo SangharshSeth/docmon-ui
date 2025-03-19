@@ -20,14 +20,15 @@ import {
   Clock,
   Info
 } from "lucide-react";
+import { DockerContainer, DockerNetwork, DockerLog } from "@/types/docker";
 
 const ContainerDetail = () => {
   const { id } = useParams();
-  const [container, setContainer] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [container, setContainer] = useState<DockerContainer | null>(null);
+  const [logs, setLogs] = useState<DockerLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const ContainerDetail = () => {
         }
       } catch (err) {
         console.error("Failed to fetch container:", err);
-        setError(err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
       } finally {
         setIsLoading(false);
       }
@@ -127,7 +128,7 @@ const ContainerDetail = () => {
     }
   };
 
-  const formatLogTime = (isoTime) => {
+  const formatLogTime = (isoTime: string) => {
     const date = new Date(isoTime);
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
   };
@@ -354,16 +355,20 @@ const ContainerDetail = () => {
         <div className="border border-border rounded-md p-4 mb-6">
           <h3 className="text-sm font-bold mb-4">Network</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(container.networkSettings.networks).map(([networkName, network]) => (
-              <div key={networkName} className="border border-border rounded-md p-3 text-sm">
-                <p className="font-medium mb-1">{networkName}</p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <p>IP Address: {network.IPAddress}</p>
-                  <p>Gateway: {network.Gateway}</p>
-                  <p>Network ID: {network.NetworkID}</p>
+            {Object.entries(container.networkSettings.networks).map(([networkName, network]) => {
+              // Explicitly cast network to DockerNetwork to access properties safely
+              const typedNetwork = network as DockerNetwork;
+              return (
+                <div key={networkName} className="border border-border rounded-md p-3 text-sm">
+                  <p className="font-medium mb-1">{networkName}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <p>IP Address: {typedNetwork.IPAddress}</p>
+                    <p>Gateway: {typedNetwork.Gateway}</p>
+                    <p>Network ID: {typedNetwork.NetworkID}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
