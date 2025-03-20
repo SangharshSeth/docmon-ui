@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from "react";
 import { dockerService } from "@/services/dockerService";
 import StatDisplay from "./StatDisplay";
-import { 
-  Server, 
-  Container, 
-  Play, 
-  Pause, 
+import {
+  Server,
+  Container,
+  Play,
+  Pause,
   Square,
   Cpu,
   Database,
-  Clock
+  Clock,
 } from "lucide-react";
 
 const SystemInfo: React.FC = () => {
@@ -22,7 +21,10 @@ const SystemInfo: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await dockerService.getSystemInfo();
-        setSystemInfo(data);
+        const systemInfo = {
+          ...data,
+        };
+        setSystemInfo(systemInfo);
       } catch (error) {
         console.error("Failed to fetch system info:", error);
       } finally {
@@ -50,7 +52,9 @@ const SystemInfo: React.FC = () => {
     return (
       <div className="pb-6 border-b border-border mb-6">
         <h2 className="text-lg font-bold mb-4">System Info</h2>
-        <p className="text-muted-foreground">Unable to load system information</p>
+        <p className="text-muted-foreground">
+          Unable to load system information
+        </p>
       </div>
     );
   }
@@ -65,46 +69,25 @@ const SystemInfo: React.FC = () => {
     <div className="pb-6 border-b border-border mb-6 animate-fade-in">
       <h2 className="text-lg font-bold mb-4">System Overview</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatDisplay 
+        <StatDisplay
           icon={Container}
           label="Containers"
           value={systemInfo.containers}
         />
-        <StatDisplay 
+        <StatDisplay
           icon={Play}
           label="Running"
           value={systemInfo.containersRunning}
         />
-        <StatDisplay 
+        <StatDisplay
           icon={Pause}
           label="Paused"
           value={systemInfo.containersPaused}
         />
-        <StatDisplay 
+        <StatDisplay
           icon={Square}
           label="Stopped"
           value={systemInfo.containersStopped}
-        />
-      </div>
-      
-      <h3 className="text-sm font-bold mt-6 mb-4">Host Resources</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <StatDisplay 
-          icon={Cpu}
-          label="CPUs"
-          value={systemInfo.cpus}
-          unit="cores"
-        />
-        <StatDisplay 
-          icon={Database}
-          label="Memory Usage"
-          value={`${memUsed}/${memTotal}`}
-          unit="GB"
-        />
-        <StatDisplay 
-          icon={Server}
-          label="Engine Version"
-          value={systemInfo.engineVersion}
         />
       </div>
     </div>

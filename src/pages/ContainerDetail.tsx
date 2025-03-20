@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { dockerService } from "@/services/dockerService";
@@ -20,11 +19,12 @@ import {
   Clock,
   Info
 } from "lucide-react";
-import { DockerContainer, DockerNetwork, DockerLog } from "@/types/docker";
+import { DockerContainerInfo, DockerNetwork, DockerLog, ContainerStats } from "@/types/docker";
 
 const ContainerDetail = () => {
   const { id } = useParams();
-  const [container, setContainer] = useState<DockerContainer | null>(null);
+  const [container, setContainer] = useState<DockerContainerInfo | null>(null);
+  const [stats, setStats] = useState<ContainerStats | null>(null);
   const [logs, setLogs] = useState<DockerLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -40,6 +40,9 @@ const ContainerDetail = () => {
         const foundContainer = containers.find(c => c.id === id);
         if (foundContainer) {
           setContainer(foundContainer);
+          // Fetch container stats
+          const statsData = await dockerService.getContainerStats(id);
+          setStats(statsData as ContainerStats);
         } else {
           setError(new Error("Container not found"));
         }
@@ -68,65 +71,41 @@ const ContainerDetail = () => {
     fetchLogs();
   }, [id, showLogs]);
 
-  const handleStart = async () => {
+  /**
+   * Refreshes container data by fetching the latest state
+   */
+  const refreshContainerData = async () => {
+    if (!id) return;
+    const containers = await dockerService.getContainers();
+    const updatedContainer = containers.find(c => c.id === id);
+    if (updatedContainer) {
+      setContainer(updatedContainer);
+    }
+  };
+
+  /**
+   * Handles container actions (start, stop, restart)
+   * @param action - The action to perform ('start', 'stop', or 'restart')
+   */
+  const handleContainerAction = async (action: 'start' | 'stop' | 'restart') => {
     if (!id) return;
     try {
       setIsActionLoading(true);
-      await dockerService.startContainer(id);
-      toast.success(`Container started`);
-      
-      // Refresh container data
-      const containers = await dockerService.getContainers();
-      const updatedContainer = containers.find(c => c.id === id);
-      if (updatedContainer) {
-        setContainer(updatedContainer);
-      }
+      await dockerService[`${action}Container`](id);
+      toast.success(`Container ${action}ed successfully`);
+      await refreshContainerData();
     } catch (error) {
-      toast.error(`Failed to start container`);
+      console.error(`Failed to ${action} container:`, error);
+      toast.error(`Failed to ${action} container`);
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  const handleStop = async () => {
-    if (!id) return;
-    try {
-      setIsActionLoading(true);
-      await dockerService.stopContainer(id);
-      toast.success(`Container stopped`);
-      
-      // Refresh container data
-      const containers = await dockerService.getContainers();
-      const updatedContainer = containers.find(c => c.id === id);
-      if (updatedContainer) {
-        setContainer(updatedContainer);
-      }
-    } catch (error) {
-      toast.error(`Failed to stop container`);
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleRestart = async () => {
-    if (!id) return;
-    try {
-      setIsActionLoading(true);
-      await dockerService.restartContainer(id);
-      toast.success(`Container restarted`);
-      
-      // Refresh container data
-      const containers = await dockerService.getContainers();
-      const updatedContainer = containers.find(c => c.id === id);
-      if (updatedContainer) {
-        setContainer(updatedContainer);
-      }
-    } catch (error) {
-      toast.error(`Failed to restart container`);
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
+  // Replace individual action handlers with consolidated handler
+  const handleStart = () => handleContainerAction('start');
+  const handleStop = () => handleContainerAction('stop');
+  const handleRestart = () => handleContainerAction('restart');
 
   const formatLogTime = (isoTime: string) => {
     const date = new Date(isoTime);
@@ -155,9 +134,9 @@ const ContainerDetail = () => {
   }
 
   // Format container info
-  const name = container.names[0].replace(/^\//, "");
+  const name = container.names.replace(/^\//, "");
   const createdTime = formatDistance(
-    new Date(container.created),
+    new Date(container.created_at),
     new Date(),
     { addSuffix: true }
   );
@@ -172,10 +151,10 @@ const ContainerDetail = () => {
           <h2 className="text-xl font-bold flex items-center">
             <Server className="w-5 h-5 mr-2 text-muted-foreground" />
             {name}
-            <StatusBadge status={container.state} className="ml-3" />
+            <StatusBadge status={container.status as "running" | "exited" | "paused" | "restarting" | "created"} className="ml-3" />
           </h2>
           <div className="flex items-center space-x-2">
-            {container.state !== "running" && (
+            {container.status !== "running" && (
               <button
                 onClick={handleStart}
                 disabled={isActionLoading}
@@ -185,7 +164,7 @@ const ContainerDetail = () => {
                 <Play className="w-4 h-4" />
               </button>
             )}
-            {container.state === "running" && (
+            {container.status === "running" && (
               <button
                 onClick={handleStop}
                 disabled={isActionLoading}
@@ -197,9 +176,9 @@ const ContainerDetail = () => {
             )}
             <button
               onClick={handleRestart}
-              disabled={isActionLoading || container.state !== "running"}
+              disabled={isActionLoading || container.status !== "running"}
               className={`p-1.5 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors ${
-                (isActionLoading || container.state !== "running") && "opacity-50 cursor-not-allowed"
+                (isActionLoading || container.status !== "running") && "opacity-50 cursor-not-allowed"
               }`}
               title="Restart"
             >
@@ -241,19 +220,21 @@ const ContainerDetail = () => {
               <p className="text-xs text-muted-foreground mb-1">Image</p>
               <p className="font-mono truncate">{container.image}</p>
             </div>
-            <div className="text-sm">
-              <p className="text-xs text-muted-foreground mb-1">Command</p>
-              <p className="font-mono truncate">{container.command}</p>
-            </div>
+            {container.command && (
+              <div className="text-sm">
+                <p className="text-xs text-muted-foreground mb-1">Command</p>
+                <p className="font-mono truncate">{container.command}</p>
+              </div>
+            )}
           </div>
           
           <div className="mt-4">
             <p className="text-xs text-muted-foreground mb-1">Ports</p>
-            {container.ports.length > 0 ? (
+            {container.ports && container.ports.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
                 {container.ports.map((port, idx) => (
                   <div key={idx} className="text-sm border border-border rounded-sm p-1 font-mono">
-                    {port.PublicPort || ''}:{port.PrivatePort}
+                    {port.public_port || ''}:{port.private_port}
                   </div>
                 ))}
               </div>
@@ -282,15 +263,15 @@ const ContainerDetail = () => {
             Resource Usage
           </h3>
           
-          {container.stats ? (
+          {stats ? (
             <div className="space-y-4">
               <ResourceUsage
-                percentage={container.stats.cpu_percentage}
+                percentage={stats.cpu_percentage}
                 label="CPU"
                 className="mb-3"
               />
               <ResourceUsage
-                percentage={container.stats.memory_percentage}
+                percentage={stats.memory_percentage}
                 label="Memory"
                 className="mb-3"
               />
@@ -301,8 +282,8 @@ const ContainerDetail = () => {
                     Memory Usage
                   </p>
                   <p>
-                    {Math.round(container.stats.memory_usage / 1024 / 1024)} MB /
-                    {Math.round(container.stats.memory_limit / 1024 / 1024)} MB
+                    {Math.round(stats.memory_usage / 1024 / 1024)} MB /
+                    {Math.round(stats.memory_limit / 1024 / 1024)} MB
                   </p>
                 </div>
                 <div className="text-sm">
@@ -311,9 +292,9 @@ const ContainerDetail = () => {
                     Disk I/O
                   </p>
                   <p>
-                    R: {Math.round(container.stats.block_read / 1024)} KB
+                    R: {Math.round(stats.block_read / 1024)} KB
                     <br />
-                    W: {Math.round(container.stats.block_write / 1024)} KB
+                    W: {Math.round(stats.block_write / 1024)} KB
                   </p>
                 </div>
                 <div className="text-sm">
@@ -322,9 +303,9 @@ const ContainerDetail = () => {
                     Network
                   </p>
                   <p>
-                    RX: {Math.round(container.stats.network_rx / 1024)} KB
+                    RX: {Math.round(stats.network_rx / 1024)} KB
                     <br />
-                    TX: {Math.round(container.stats.network_tx / 1024)} KB
+                    TX: {Math.round(stats.network_tx / 1024)} KB
                   </p>
                 </div>
               </div>
@@ -334,29 +315,12 @@ const ContainerDetail = () => {
           )}
         </div>
       </div>
-      
-      {container.mounts && container.mounts.length > 0 && (
-        <div className="border border-border rounded-md p-4 mb-6">
-          <h3 className="text-sm font-bold mb-4">Mounts</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {container.mounts.map((mount, idx) => (
-              <div key={idx} className="border border-border rounded-md p-3 text-sm">
-                <p className="text-xs text-muted-foreground mb-1">Type: {mount.Type}</p>
-                <p className="font-mono text-xs truncate">Source: {mount.Source}</p>
-                <p className="font-mono text-xs truncate">Target: {mount.Destination}</p>
-                <p className="text-xs">{mount.RW ? "Read/Write" : "Read Only"}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {container.networkSettings && container.networkSettings.networks && (
+      {container.networkSettings?.networks && (
         <div className="border border-border rounded-md p-4 mb-6">
           <h3 className="text-sm font-bold mb-4">Network</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(container.networkSettings.networks).map(([networkName, network]) => {
-              // Explicitly cast network to DockerNetwork to access properties safely
               const typedNetwork = network as DockerNetwork;
               return (
                 <div key={networkName} className="border border-border rounded-md p-3 text-sm">

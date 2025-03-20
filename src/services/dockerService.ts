@@ -1,35 +1,5 @@
-import { ContainerType, SystemInfoType } from "@/types";
-
-// Mock data for containers
-const mockContainers: ContainerType[] = [
-  {
-    id: "1",
-    names: ["/web-app"],
-    image: "nginx:latest",
-    state: "running",
-    status: "Up 2 minutes",
-    ports: [{PrivatePort: 80, PublicPort: 8080, Type: "tcp"}],
-    created: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    names: ["/db"],
-    image: "postgres:13",
-    state: "running",
-    status: "Up 1 hour",
-    ports: [{PrivatePort: 5432, Type: "tcp"}],
-    created: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: "3",
-    names: ["/redis"],
-    image: "redis:latest",
-    state: "exited",
-    status: "Exited (0) 5 minutes ago",
-    ports: [{PrivatePort: 6379, Type: "tcp"}],
-    created: new Date(Date.now() - 300000).toISOString(),
-  },
-];
+import { DockerContainerInfo, DockerImage, DockerLog } from "@/types/docker";
+import { SystemInfoType } from "@/types";
 
 // Mock data for system info
 const mockSystemInfo: SystemInfoType = {
@@ -38,26 +8,45 @@ const mockSystemInfo: SystemInfoType = {
   ncpu: 8,
   memoryTotal: 16,
   dockerVersion: "20.10.7",
+  images: 4,
 };
 
-export const dockerService = {
-  getContainers: async (): Promise<ContainerType[]> => {
-    // Simulate API call
-    return await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(mockContainers);
-      }, 500);
-    });
-  },
+// Mock container stats
+const mockContainerStats = {
+  cpu_percentage: 15,
+  memory_percentage: 25,
+  memory_usage: 128 * 1024 * 1024, // 128MB
+  memory_limit: 512 * 1024 * 1024, // 512MB
+  block_read: 1024 * 1024, // 1MB
+  block_write: 2048 * 1024, // 2MB
+  network_rx: 512 * 1024, // 512KB
+  network_tx: 256 * 1024, // 256KB
+};
 
-  getContainerById: async (id: string): Promise<ContainerType | undefined> => {
+// Mock container logs
+const mockLogs: DockerLog[] = [
+  {
+    timestamp: new Date(Date.now() - 5000).toISOString(),
+    stream: "stdout",
+    message: "Server started successfully"
+  },
+  {
+    timestamp: new Date(Date.now() - 4000).toISOString(),
+    stream: "stdout",
+    message: "Listening on port 3000"
+  },
+  {
+    timestamp: new Date(Date.now() - 3000).toISOString(),
+    stream: "stderr",
+    message: "Warning: Memory usage above 75%"
+  }
+];
+
+export const dockerService = {
+  getContainers: async (): Promise<DockerContainerInfo[]> => {
     // Simulate API call
-    return await new Promise((resolve) => {
-      setTimeout(() => {
-        const container = mockContainers.find((c) => c.id === id);
-        resolve(container);
-      }, 500);
-    });
+    const data = await fetch("http://localhost:8082/api/containers");
+    return await data.json();
   },
 
   getSystemInfo: async (): Promise<SystemInfoType> => {
@@ -68,23 +57,64 @@ export const dockerService = {
       }, 500);
     });
   },
-  
-  // Add these refresh methods
-  refreshContainers: async () => {
-    // In a real app, this would re-fetch from the API
-    // For now, it's just a simulation
-    console.log("Refreshing containers data");
-    return await new Promise(resolve => setTimeout(() => {
-      resolve(mockContainers);
-    }, 500));
-  },
-  
+
   refreshSystemInfo: async () => {
     // In a real app, this would re-fetch from the API
     // For now, it's just a simulation
     console.log("Refreshing system info data");
-    return await new Promise(resolve => setTimeout(() => {
-      resolve(mockSystemInfo);
-    }, 500));
+    return await new Promise((resolve) =>
+      setTimeout(() => {
+        resolve(mockSystemInfo);
+      }, 500),
+    );
+  },
+
+  getImages: async (): Promise<DockerImage[]> => {
+    const response = await fetch("http://localhost:8082/api/images");
+    return await response.json();
+  },
+
+  // Container actions (mocked)
+  startContainer: async (id: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(`Starting container ${id}`);
+        resolve();
+      }, 1000);
+    });
+  },
+
+  stopContainer: async (id: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(`Stopping container ${id}`);
+        resolve();
+      }, 1000);
+    });
+  },
+
+  restartContainer: async (id: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(`Restarting container ${id}`);
+        resolve();
+      }, 1500);
+    });
+  },
+
+  getContainerStats: async (id: string) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(mockContainerStats);
+      }, 500);
+    });
+  },
+
+  getContainerLogs: async (id: string): Promise<DockerLog[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(mockLogs);
+      }, 500);
+    });
   }
 };
