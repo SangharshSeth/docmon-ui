@@ -9,7 +9,7 @@ import Header from "@/components/Header";
 const Index = () => {
   const { data: containers, isLoading, error } = useQuery({
     queryKey: ["containers"],
-    queryFn: () => dockerService.getContainers(),
+    queryFn: () => dockerService.getContainersSnapshot(),
   });
 
   return (
@@ -46,7 +46,7 @@ const Index = () => {
         ) : containers && containers.length > 0 ? (
           <div className="space-y-4">
             {containers.map((container) => (
-              <Container key={container.id} container={container} />
+              <Container key={container.ID} container={container} />
             ))}
           </div>
         ) : (

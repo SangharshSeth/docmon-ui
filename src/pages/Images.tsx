@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { DockerImage } from "@/types/docker";
 import { dockerService } from "@/services/dockerService";
-import { HardDrive, Clock, Play, Cpu, SignalZeroIcon, Container } from "lucide-react";
+import { HardDrive, Clock, Play, Cpu, Container } from "lucide-react";
 import clsx from "clsx";
 
 export default function Images() {
@@ -43,7 +43,7 @@ export default function Images() {
           {[...Array(3)].map((_, index) => (
             <div 
               key={index} 
-              className="border border-border rounded-md h-24 animate-pulse"
+              className="border border-border rounded-md h-12 animate-pulse"
             />
           ))}
         </div>
@@ -52,68 +52,76 @@ export default function Images() {
           <p>Failed to load images</p>
         </div>
       ) : images.length > 0 ? (
-        <div className="space-y-4">
-          {images.map((image) => (
-            <div 
-              key={image.basic_info.image_id}
-              className="border border-border rounded-md overflow-hidden"
-            >
-              <div className="flex justify-between items-center p-2 border-b border-border">
-                <div className="flex items-center">
-                  <Container className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <div>
-                    <h3 className="font-bold">
-                      {image.basic_info.repo_tags[0] || 'unnamed'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      ID: {image.basic_info.image_id}
-                    </p>
+        <div className="border border-border rounded-md overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-accent/50">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Container className="w-4 h-4" />
+                    Repository Tags
                   </div>
-                </div>
-                
-                <button
-                  onClick={() => handleCreateContainer(image.basic_info.image_id)}
-                  className="px-3 py-1.5 border border-border rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
-                  title="Create Container"
-                >
-                  <Play className="w-4 h-4" />
-                  <span className="text-sm">Create</span>
-                </button>
-              </div>
-
-              <div className="p-4 grid grid-cols-3 gap-4">
-                <div className="text-sm">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center">
-                    <HardDrive className="w-3 h-3 mr-1" />
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    ID
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <HardDrive className="w-4 h-4" />
                     Size
-                  </p>
-                  <p>{image.basic_info.size}</p>
-                </div>
-                {image.detail_info && (
-                  <div className="text-sm">
-                    <p className="text-xs text-muted-foreground mb-1 flex items-center">
-                      <Cpu className="w-3 h-3 mr-1" />
-                      Platform
-                    </p>
-                    <p>{image.detail_info.architecture}/{image.detail_info.os}</p>
                   </div>
-                )}
-                <div className="text-sm">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center">
-                    <Clock className="w-3 h-3 mr-1" />
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
+                    Platform
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
                     Created
-                  </p>
-                  <p>{image.basic_info.created_at}</p>
-                </div>
-              </div>
-
-              {image.detail_info?.container_count > 0 && (
-                <div className="px-4 pb-4 text-sm text-muted-foreground">
-                  {image.detail_info.container_count} containers using this image
-                </div>
-              )}
-            </div>
-          ))}
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {images.map((image) => (
+                <tr key={image.id} className="border-b border-border hover:bg-accent/50 transition-colors">
+                  <td className="px-4 py-3 text-sm">
+                    {image.repo_tags[0] || 'unnamed'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {image.id.substring(7, 19)}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {image.size}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {image.arch}/{image.os}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {image.created_at}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleCreateContainer(image.id)}
+                      className="px-3 py-1.5 border border-border rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 ml-auto"
+                      title="Create Container"
+                    >
+                      <Play className="w-4 h-4" />
+                      <span className="text-sm">Create</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="border border-border rounded-md p-8 text-center">

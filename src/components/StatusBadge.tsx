@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +40,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
   return (
     <div 
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
+        "inline-flex items-center px-2 py-0.5 text-xs font-medium border",
         config.className,
         config.animation,
         className

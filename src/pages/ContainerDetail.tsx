@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { dockerService } from "@/services/dockerService";
 import StatusBadge from "@/components/StatusBadge";
 import ResourceUsage from "@/components/ResourceUsage";
@@ -23,6 +23,7 @@ import { DockerContainerInfo, DockerNetwork, DockerLog, ContainerStats } from "@
 
 const ContainerDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [container, setContainer] = useState<DockerContainerInfo | null>(null);
   const [stats, setStats] = useState<ContainerStats | null>(null);
   const [logs, setLogs] = useState<DockerLog[]>([]);
@@ -36,8 +37,8 @@ const ContainerDetail = () => {
       if (!id) return;
       try {
         setIsLoading(true);
-        const containers = await dockerService.getContainers();
-        const foundContainer = containers.find(c => c.id === id);
+        const containers = await dockerService.getContainersSnapshot();
+        const foundContainer = containers.find(c => c.ID === id);
         if (foundContainer) {
           setContainer(foundContainer);
           // Fetch container stats
@@ -76,8 +77,8 @@ const ContainerDetail = () => {
    */
   const refreshContainerData = async () => {
     if (!id) return;
-    const containers = await dockerService.getContainers();
-    const updatedContainer = containers.find(c => c.id === id);
+    const containers = await dockerService.getContainersSnapshot();
+    const updatedContainer = containers.find(c => c.ID === id);
     if (updatedContainer) {
       setContainer(updatedContainer);
     }
@@ -134,27 +135,24 @@ const ContainerDetail = () => {
   }
 
   // Format container info
-  const name = container.names.replace(/^\//, "");
-  const createdTime = formatDistance(
-    new Date(container.created_at),
-    new Date(),
-    { addSuffix: true }
-  );
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <Link to="/containers" className="text-sm text-muted-foreground hover:text-foreground flex items-center mb-2">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to containers
-        </Link>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="text-sm text-muted-foreground hover:text-foreground flex items-center mb-2"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+        </button>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold flex items-center">
             <Server className="w-5 h-5 mr-2 text-muted-foreground" />
-            {name}
-            <StatusBadge status={container.status as "running" | "exited" | "paused" | "restarting" | "created"} className="ml-3" />
+            {container.Name[0]}
+            <StatusBadge status={container.State as "running" | "exited" | "paused" | "restarting" | "created"} className="ml-3" />
           </h2>
           <div className="flex items-center space-x-2">
-            {container.status !== "running" && (
+            {container.State !== "running" && (
               <button
                 onClick={handleStart}
                 disabled={isActionLoading}
@@ -164,7 +162,7 @@ const ContainerDetail = () => {
                 <Play className="w-4 h-4" />
               </button>
             )}
-            {container.status === "running" && (
+            {container.State === "running" && (
               <button
                 onClick={handleStop}
                 disabled={isActionLoading}
@@ -176,9 +174,9 @@ const ContainerDetail = () => {
             )}
             <button
               onClick={handleRestart}
-              disabled={isActionLoading || container.status !== "running"}
+              disabled={isActionLoading || container.State !== "running"}
               className={`p-1.5 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors ${
-                (isActionLoading || container.status !== "running") && "opacity-50 cursor-not-allowed"
+                (isActionLoading || container.State !== "running") && "opacity-50 cursor-not-allowed"
               }`}
               title="Restart"
             >
@@ -207,34 +205,34 @@ const ContainerDetail = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">ID</p>
-              <p className="font-mono">{container.id}</p>
+              <p className="font-mono">{container.ID}</p>
             </div>
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">Created</p>
               <div className="flex items-center">
                 <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
-                <p>{createdTime}</p>
+                <p>{container.CreatedAt}</p>
               </div>
             </div>
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">Image</p>
-              <p className="font-mono truncate">{container.image}</p>
+              <p className="font-mono truncate">{container.Image}</p>
             </div>
-            {container.command && (
+            {container.Command && (
               <div className="text-sm">
                 <p className="text-xs text-muted-foreground mb-1">Command</p>
-                <p className="font-mono truncate">{container.command}</p>
+                <p className="font-mono truncate">{container.Command}</p>
               </div>
             )}
           </div>
           
           <div className="mt-4">
             <p className="text-xs text-muted-foreground mb-1">Ports</p>
-            {container.ports && container.ports.length > 0 ? (
+            {container.Ports && container.Ports.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
-                {container.ports.map((port, idx) => (
+                {container.Ports.map((port, idx) => (
                   <div key={idx} className="text-sm border border-border rounded-sm p-1 font-mono">
-                    {port.public_port || ''}:{port.private_port}
+                    {port.PublicPort || ''}:{port.PrivatePort}
                   </div>
                 ))}
               </div>
@@ -243,18 +241,6 @@ const ContainerDetail = () => {
             )}
           </div>
           
-          {container.labels && Object.keys(container.labels).length > 0 && (
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-1">Labels</p>
-              <div className="grid grid-cols-1 gap-1">
-                {Object.entries(container.labels).map(([key, value]) => (
-                  <div key={key} className="text-xs">
-                    <span className="font-medium">{key}:</span> {value}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
         
         <div className="border border-border rounded-md p-4">
@@ -316,26 +302,7 @@ const ContainerDetail = () => {
         </div>
       </div>
 
-      {container.networkSettings?.networks && (
-        <div className="border border-border rounded-md p-4 mb-6">
-          <h3 className="text-sm font-bold mb-4">Network</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(container.networkSettings.networks).map(([networkName, network]) => {
-              const typedNetwork = network as DockerNetwork;
-              return (
-                <div key={networkName} className="border border-border rounded-md p-3 text-sm">
-                  <p className="font-medium mb-1">{networkName}</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <p>IP Address: {typedNetwork.IPAddress}</p>
-                    <p>Gateway: {typedNetwork.Gateway}</p>
-                    <p>Network ID: {typedNetwork.NetworkID}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
       
       {/* Container logs */}
       {showLogs && (

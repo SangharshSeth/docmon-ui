@@ -1,5 +1,5 @@
 import { DockerContainerInfo, DockerImage, DockerLog } from "@/types/docker";
-import { SystemInfoType } from "@/types";
+import { SystemInfoType } from "@/types/docker";
 
 // Mock data for system info
 const mockSystemInfo: SystemInfoType = {
@@ -9,6 +9,7 @@ const mockSystemInfo: SystemInfoType = {
   memoryTotal: 16,
   dockerVersion: "20.10.7",
   images: 4,
+  containers: 1
 };
 
 // Mock container stats
@@ -43,10 +44,10 @@ const mockLogs: DockerLog[] = [
 ];
 
 export const dockerService = {
-  getContainers: async (): Promise<DockerContainerInfo[]> => {
-    // Simulate API call
-    const data = await fetch("http://localhost:8082/api/containers");
+  getContainersSnapshot: async (): Promise<DockerContainerInfo[]> => {
+    const data = await fetch("http://localhost:8082/api/containers-snapshot");
     return await data.json();
+
   },
 
   getSystemInfo: async (): Promise<SystemInfoType> => {
@@ -54,7 +55,7 @@ export const dockerService = {
     return await new Promise((resolve) => {
       setTimeout(() => {
         resolve(mockSystemInfo);
-      }, 500);
+      }, 100);
     });
   },
 

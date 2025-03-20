@@ -1,27 +1,19 @@
 import { LucideIcon } from "lucide-react";
 
 export interface DockerContainerInfo {
-  id: string;
-  names: string;  // Changed from string[] to string
-  image: string;
-  status: string;
-  created_at: string;  // Changed from created to created_at
-  ports: Array<{
-    private_port: string;
-    public_port: string;
-    protocol: string;
-    host_ip: string;
+  ID: string;
+  Name: string[];
+  Image: string;
+  Command: string;
+  CreatedAt: number;
+  Status: string;
+  State: string;
+  Ports: Array<{
+    IP: string;
+    PrivatePort: number;
+    PublicPort: number;
+    Type: string;
   }>;
-  restart_policy: string;
-  health_status?: string;
-  memory_usage: number;
-  memory_limit: number;
-  state?: string;
-  command?: string;
-  labels?: Record<string, string>;
-  networkSettings?: {
-    networks: Record<string, DockerNetwork>;
-  };
 }
 
 export interface DockerNetwork {
@@ -30,26 +22,15 @@ export interface DockerNetwork {
   NetworkID: string;
 }
 
-export interface DockerImageBasicInfo {
-  image_id: string;
-  repo_tags: string[];
-  size: string;
-  created_at: string;
-}
-
-export interface DockerImageDetailInfo {
-  parent_id?: string;
-  repo_digests?: string[];
-  architecture?: string;
-  os?: string;
-  labels?: Record<string, string>;
-  exposed_ports?: Record<string, Record<string, string>>; // Properly typed as a record of port to config
-  container_count: number;
-}
 
 export interface DockerImage {
-  basic_info: DockerImageBasicInfo;
-  detail_info?: DockerImageDetailInfo;
+  id: string;
+  repo_tags: string[];
+  created_at: string;
+  size: number;
+  arch: string;
+  os: string;
+  labels: string[];
 }
 
 export interface DockerLog {

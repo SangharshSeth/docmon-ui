@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SystemInfo from "@/components/SystemInfo";
 import { Container } from "@/components/Container";
@@ -6,14 +6,14 @@ import { dockerService } from "@/services/dockerService";
 import { DockerContainerInfo, DockerImage } from "@/types/docker";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import ResourceCard from "@/components/ResourceCard";
-import { 
-  Box, 
-  Container as ContainerIcon, 
-  HardDrive, 
-  Database,
-  ArrowRight,
+import {
   Activity,
-  Layers
+  ArrowRight,
+  Box,
+  Container as ContainerIcon,
+  Database,
+  HardDrive,
+  Layers,
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 
@@ -33,15 +33,15 @@ const Overview = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [containersData, imagesData] = await Promise.all([
-          dockerService.getContainers(),
-          dockerService.getImages()
+        const [imagesData, containersData] = await Promise.all([
+          dockerService.getImages(),
+          dockerService.getContainersSnapshot(),
         ]);
-        setContainers(containersData);
         setImages(imagesData);
+        setContainers(containersData);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setError(err instanceof Error ? err : new Error("Unknown error"));
       } finally {
         setIsLoading(false);
       }
@@ -63,16 +63,22 @@ const Overview = () => {
     }
 
     return containers.slice(0, 5).map((container) => (
-      <div key={container.id} className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0">
+      <div
+        key={container.ID}
+        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0"
+      >
         <div className="flex items-center space-x-3">
           <ContainerIcon className="w-4 h-4 text-muted-foreground" />
-          <Link to={`/containers/${container.id}`} className="hover:underline font-medium">
-            {container.names}
+          <Link
+            to={`/containers/${container.ID}`}
+            className="hover:underline font-medium"
+          >
+            {container.Name[0].split("/")[1]}
           </Link>
-          <StatusBadge status={container.status as any} />
+          <StatusBadge status={container.State as any} />
         </div>
-        <Link 
-          to={`/containers/${container.id}`}
+        <Link
+          to={`/containers/${container.ID}`}
           className="text-muted-foreground hover:text-foreground"
         >
           <ArrowRight className="w-4 h-4" />
@@ -94,15 +100,20 @@ const Overview = () => {
     }
 
     return images.slice(0, 5).map((image) => (
-      <div key={image.basic_info.image_id} className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0">
-        <div className="flex items-center space-x-3">
-          <Layers className="w-4 h-4 text-muted-foreground" />
-          <span className="font-medium">
-            {image.basic_info.repo_tags[0] || '<none>:<none>'}
-          </span>
-        </div>
+      <div
+        key={image.id}
+        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0 hover:bg-gray-100"
+      >
+        <Link to={`images/${image.id}`}>
+          <div className="flex items-center space-x-3">
+            <Layers className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium">
+              {image.repo_tags[0].includes("/")? image.repo_tags[0].split("/")[1] : image.repo_tags[0] || "<none>:<none>"}
+            </span>
+          </div>
+        </Link>
         <span className="text-sm text-muted-foreground">
-          {image.basic_info.size}
+          {image.size}
         </span>
       </div>
     ));
@@ -112,7 +123,7 @@ const Overview = () => {
     <div className="animate-fade-in space-y-6">
       {/* System Information Section */}
       <SystemInfo />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Containers Section */}
         <div className="border border-border rounded-md">
@@ -121,8 +132,8 @@ const Overview = () => {
               <Box className="w-4 h-4 text-muted-foreground" />
               <h2 className="font-bold">Containers</h2>
             </div>
-            <Link 
-              to="/containers" 
+            <Link
+              to="/containers"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center"
             >
               View all
@@ -130,13 +141,17 @@ const Overview = () => {
             </Link>
           </div>
           <div className="divide-y divide-border">
-            {isLoading ? (
-              <LoadingSkeleton count={3} />
-            ) : error ? (
-              <div className="p-4 text-red-500">Failed to load containers</div>
-            ) : (
-              renderContainersList()
-            )}
+            {isLoading
+              ? <LoadingSkeleton count={3} />
+              : error
+              ? (
+                <div className="p-4 text-red-500">
+                  Failed to load containers
+                </div>
+              )
+              : (
+                renderContainersList()
+              )}
           </div>
         </div>
 
@@ -147,8 +162,8 @@ const Overview = () => {
               <HardDrive className="w-4 h-4 text-muted-foreground" />
               <h2 className="font-bold">Images</h2>
             </div>
-            <Link 
-              to="/images" 
+            <Link
+              to="/images"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center"
             >
               View all
@@ -156,13 +171,13 @@ const Overview = () => {
             </Link>
           </div>
           <div className="divide-y divide-border">
-            {isLoading ? (
-              <LoadingSkeleton count={3} />
-            ) : error ? (
-              <div className="p-4 text-red-500">Failed to load images</div>
-            ) : (
-              renderImagesList()
-            )}
+            {isLoading
+              ? <LoadingSkeleton count={3} />
+              : error
+              ? <div className="p-4 text-red-500">Failed to load images</div>
+              : (
+                renderImagesList()
+              )}
           </div>
         </div>
       </div>
@@ -175,20 +190,20 @@ const Overview = () => {
         </div>
         <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ResourceCard 
-              icon={Database} 
-              title="Memory Usage" 
-              isLoading={isLoading} 
+            <ResourceCard
+              icon={Database}
+              title="Memory Usage"
+              isLoading={isLoading}
             />
-            <ResourceCard 
-              icon={Activity} 
-              title="CPU Usage" 
-              isLoading={isLoading} 
+            <ResourceCard
+              icon={Activity}
+              title="CPU Usage"
+              isLoading={isLoading}
             />
-            <ResourceCard 
-              icon={HardDrive} 
-              title="Disk Usage" 
-              isLoading={isLoading} 
+            <ResourceCard
+              icon={HardDrive}
+              title="Disk Usage"
+              isLoading={isLoading}
             />
           </div>
         </div>

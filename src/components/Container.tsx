@@ -37,19 +37,19 @@ export function Container({ container }: ContainerProps) {
       <div className="flex justify-between items-center p-4 border-b border-border">
         <div className="flex items-center">
           <Server className="w-4 h-4 mr-2 text-muted-foreground" />
-          <Link to={`/containers/${container.id}`} className="font-bold hover:underline">
-            {container.names}
+          <Link to={`/containers/${container.ID}`} className="font-bold hover:underline">
+            {container.Name[0]}
           </Link>
-          <StatusBadge status={container.status as "running" | "exited" | "paused" | "restarting" | "created"} className="ml-3" />
+          <StatusBadge status={container.State as "running" | "exited" | "paused" | "restarting" | "created"} className="ml-3" />
         </div>
 
         <div className="flex items-center">
-          {container.status !== "running" && (
+          {container.State !== "running" && (
             <button className="p-1.5 mr-1 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
               <Play className="w-4 h-4" />
             </button>
           )}
-          {container.status === "running" && (
+          {container.State === "running" && (
             <button className="p-1.5 mr-1 rounded-sm hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
               <Square className="w-4 h-4" />
             </button>
@@ -84,24 +84,24 @@ export function Container({ container }: ContainerProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">Image</p>
-              <p className="font-mono truncate">{container.image}</p>
+              <p className="font-mono truncate">{container.Image}</p>
             </div>
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">Created</p>
               <div className="flex items-center">
                 <Clock className="w-3 h-3 mr-1 text-muted-foreground" />
-                <p>{container.created_at}</p>
+                <p>{container.CreatedAt}</p>
               </div>
             </div>
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">ID</p>
-              <p className="font-mono">{container.id.substring(0, 12)}</p>
+              <p className="font-mono">{container.ID}</p>
             </div>
             <div className="text-sm">
               <p className="text-xs text-muted-foreground mb-1">Ports</p>
               <p>
-                {container.ports.length > 0
-                  ? container.ports.map(port => `${port.public_port || ''}:${port.private_port}`).join(", ")
+                {container.Ports.length > 0
+                  ? container.Ports.map(port => `${port.PublicPort || ''}:${port.PrivatePort}`).join(", ")
                   : "None"}
               </p>
             </div>

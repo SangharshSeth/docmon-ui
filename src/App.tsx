@@ -11,6 +11,7 @@ import Images from "./pages/Images";
 import Logs from "./pages/Logs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ImageDetails from "./pages/ImageDetails";
 
 const App = () => (
   <TooltipProvider>
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="containers" element={<Containers />} />
           <Route path="containers/:id" element={<ContainerDetail />} />
           <Route path="images" element={<Images />} />
+          <Route path="images/:id" element={<ImageDetails />} />
           <Route path="logs" element={<Logs />} />
           <Route path="settings" element={<Settings />} />
         </Route>
