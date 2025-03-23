@@ -45,9 +45,8 @@ const mockLogs: DockerLog[] = [
 
 export const dockerService = {
   getContainersSnapshot: async (): Promise<DockerContainerInfo[]> => {
-    const data = await fetch("http://localhost:8082/api/containers-snapshot");
+    const data = await fetch("/api/containers-snapshot");
     return await data.json();
-
   },
 
   getSystemInfo: async (): Promise<SystemInfoType> => {
@@ -71,7 +70,7 @@ export const dockerService = {
   },
 
   getImages: async (): Promise<DockerImage[]> => {
-    const response = await fetch("http://localhost:8082/api/images");
+    const response = await fetch("/api/images");
     return await response.json();
   },
 
@@ -107,7 +106,7 @@ export const dockerService = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(mockContainerStats);
-      }, 500);
+      }, 0);
     });
   },
 
