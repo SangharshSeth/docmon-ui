@@ -37,6 +37,7 @@ const Overview = () => {
           dockerService.getImages(),
           dockerService.getContainersSnapshot(),
         ]);
+        console.log(`Image data`, imagesData)
         setImages(imagesData);
         setContainers(containersData);
       } catch (err) {
@@ -108,7 +109,11 @@ const Overview = () => {
           <div className="flex items-center space-x-3">
             <Layers className="w-4 h-4 text-muted-foreground" />
             <span className="font-medium">
-              {image.repo_tags[0].includes("/")? image.repo_tags[0].split("/")[1] : image.repo_tags[0] || "<none>:<none>"}
+              {image.repo_tags.length > 0
+                ? (image.repo_tags[0].includes("/")
+                  ? image.repo_tags[0].split("/")[1]
+                  : image.repo_tags[0])
+                : "<none>:<none>"}
             </span>
           </div>
         </Link>
