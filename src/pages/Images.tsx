@@ -48,7 +48,7 @@ export default function Images() {
           ))}
         </div>
       ) : error ? (
-        <div className="border border-red-300 bg-red-50 text-red-700 rounded-md p-4">
+        <div className="border border-border bg-card text-destructive rounded-md p-4">
           <p>Failed to load images</p>
         </div>
       ) : images.length > 0 ? (

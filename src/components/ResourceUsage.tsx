@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 
@@ -15,12 +14,12 @@ const ResourceUsage: React.FC<ResourceUsageProps> = ({
   className,
   showValue = true
 }) => {
-  // Set color based on percentage
-  let barColor = "bg-primary";
+  // Set color based on percentage using our new color scheme
+  let barColor = "bg-chart-3"; // Default color (blue)
   if (percentage > 80) {
-    barColor = "bg-red-500";
+    barColor = "bg-destructive"; // Red for high usage
   } else if (percentage > 60) {
-    barColor = "bg-yellow-500";
+    barColor = "bg-chart-2"; // Orange/coral for medium usage
   }
 
   // Format percentage for display
@@ -31,10 +30,10 @@ const ResourceUsage: React.FC<ResourceUsageProps> = ({
       <div className="flex justify-between items-center mb-1">
         <span className="text-xs text-muted-foreground">{label}</span>
         {showValue && (
-          <span className="text-xs font-medium">{formattedPercentage}%</span>
+          <span className="text-xs font-medium text-foreground">{formattedPercentage}%</span>
         )}
       </div>
-      <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-all duration-500", barColor)}
           style={{ width: `${percentage}%` }}

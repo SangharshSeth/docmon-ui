@@ -52,7 +52,7 @@ export default function ImageDetails() {
 
   if (error) {
     return (
-      <div className="border border-red-300 bg-red-50 text-red-700 p-4">
+      <div className="border border-border bg-card text-destructive rounded-md p-4">
         <p>{error}</p>
       </div>
     );
@@ -133,4 +133,4 @@ export default function ImageDetails() {
       </div>
     </div>
   );
-} 
+}

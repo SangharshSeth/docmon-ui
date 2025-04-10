@@ -150,7 +150,7 @@ const Overview = () => {
               ? <LoadingSkeleton count={3} />
               : error
               ? (
-                <div className="p-4 text-red-500">
+                <div className="p-4 text-destructive bg-card">
                   Failed to load containers
                 </div>
               )
@@ -179,7 +179,7 @@ const Overview = () => {
             {isLoading
               ? <LoadingSkeleton count={3} />
               : error
-              ? <div className="p-4 text-red-500">Failed to load images</div>
+              ? <div className="p-4 text-destructive bg-card">Failed to load images</div>
               : (
                 renderImagesList()
               )}

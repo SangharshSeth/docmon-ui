@@ -125,7 +125,7 @@ const ContainerDetail = () => {
 
   if (error || !container) {
     return (
-      <div className="border border-red-300 bg-red-50 text-red-700 rounded-md p-4 dark:bg-red-950 dark:text-red-400 dark:border-red-900">
+      <div className="border border-border bg-card text-destructive rounded-md p-4">
         <p>Failed to load container details</p>
         <Link to="/containers" className="flex items-center mt-4 text-sm">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to containers

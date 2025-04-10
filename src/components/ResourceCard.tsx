@@ -21,18 +21,18 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   value, 
   isLoading = false 
 }) => (
-  <div className="border border-border rounded-md p-4">
+  <div className="border border-border bg-card rounded-md p-4 transition-colors hover:bg-accent/50">
     {/* Header section with icon and title */}
     <div className="flex items-center space-x-2 mb-2">
-      <Icon className="w-4 h-4 text-muted-foreground" />
-      <h3 className="text-sm font-medium">{title}</h3>
+      <Icon className="w-4 h-4 text-chart-1" />
+      <h3 className="text-sm font-medium text-card-foreground">{title}</h3>
     </div>
 
     {/* Content section */}
     <div className="h-32 flex items-center justify-center">
       {isLoading ? (
         <div className="w-full">
-          <div className="h-4 bg-secondary rounded animate-pulse w-24 mx-auto" />
+          <div className="h-4 bg-muted rounded animate-pulse w-24 mx-auto" />
         </div>
       ) : (
         <span className="text-muted-foreground">
@@ -43,4 +43,4 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   </div>
 );
 
-export default ResourceCard; 
+export default ResourceCard;
