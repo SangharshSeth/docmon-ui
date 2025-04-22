@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Container, 
-  Image as ImageIcon, 
+  Boxes, 
   Terminal, 
   Settings,
   Server
@@ -24,7 +23,7 @@ const navItems = [
   },
   { 
     name: "Images", 
-    icon: ImageIcon, 
+    icon: Boxes, 
     path: "/images" 
   },
   { 
@@ -51,7 +50,7 @@ const Sidebar: React.FC = () => {
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className={cn("flex items-center", collapsed && "justify-center w-full")}>
           <Server className="w-6 h-6 mr-2" />
-          {!collapsed && <span className="font-bold">Docker Monitor</span>}
+          {!collapsed && <span className="text-3xl font-bold">D0CM0N</span>}
         </div>
         <button 
           onClick={() => setCollapsed(!collapsed)}

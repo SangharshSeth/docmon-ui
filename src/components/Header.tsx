@@ -1,18 +1,47 @@
-
 import React from "react";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useLocation } from "react-router-dom";
 import { dockerService } from "@/services/dockerService";
 
 const Header: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const location = useLocation();
+
+  const getHeaderContent = () => {
+    switch (location.pathname) {
+      case '/containers':
+        return {
+          title: "Containers",
+          subtitle: "Manage your Docker containers"
+        };
+      case '/images':
+        return {
+          title: "Images",
+          subtitle: "View and manage Docker images"
+        };
+      case '/logs':
+        return {
+          title: "Logs",
+          subtitle: "View container logs"
+        };
+      case '/settings':
+        return {
+          title: "Settings",
+          subtitle: "Configure Docker Monitor"
+        };
+      default:
+        return {
+          title: "Docker Monitor",
+          subtitle: "Minimal container monitoring"
+        };
+    }
+  };
 
   const refreshData = async () => {
     setIsRefreshing(true);
     try {
-      // Directly trigger a data refresh instead of using React Query
       await Promise.all([
-        dockerService.refreshContainers(),
         dockerService.refreshSystemInfo()
       ]);
       toast.success("Data refreshed");
@@ -24,12 +53,14 @@ const Header: React.FC = () => {
     }
   };
 
+  const { title, subtitle } = getHeaderContent();
+
   return (
     <div className="flex justify-between items-center mb-6">
       <div>
-        <h1 className="text-2xl font-bold">Docker Monitor</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         <p className="text-sm text-muted-foreground">
-          Minimal container monitoring
+          {subtitle}
         </p>
       </div>
       <button

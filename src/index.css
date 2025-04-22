@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+=======
+@import '@fontsource/jetbrains-mono/300.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+>>>>>>> 1fcd83c (refactor: clean ups)
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -84,12 +93,17 @@
 }
 
 @layer base {
+  html {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   /* SF Mono font */
