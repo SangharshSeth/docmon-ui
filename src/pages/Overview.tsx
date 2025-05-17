@@ -1,34 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SystemInfo from "@/components/SystemInfo";
-import { Container } from "@/components/Container";
 import { dockerService } from "@/services/dockerService";
 import { DockerContainerInfo, DockerImage } from "@/types/docker";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import ResourceCard from "@/components/ResourceCard";
 import {
-  Activity,
-  ArrowRight,
   Box,
   Container as ContainerIcon,
-  Database,
-  HardDrive,
+  Image,
   Layers,
+  Activity,
+  Pause,
+  CircleSlash,
+  ArrowRight,
+  ChevronRight,
+  HardDrive,
+  Power,
+  PowerOff
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 
-/**
- * Overview page component that displays system information, containers, images,
- * and resource usage in a dashboard layout
- */
 const Overview = () => {
-  // State management for data and loading states
   const [containers, setContainers] = useState<DockerContainerInfo[]>([]);
   const [images, setImages] = useState<DockerImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch containers and images data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,9 +48,6 @@ const Overview = () => {
     fetchData();
   }, []);
 
-  /**
-   * Renders a list of up to 5 containers with their status and link to details
-   */
   const renderContainersList = () => {
     if (containers.length === 0) {
       return (
@@ -61,18 +55,16 @@ const Overview = () => {
           No containers found
         </div>
       );
-    }
-
-    return containers.slice(0, 5).map((container) => (
+    }    return containers.slice(0, 5).map((container) => (
       <div
         key={container.ID}
-        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0"
+        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0 hover:bg-accent/50"
       >
         <div className="flex items-center space-x-3">
           <ContainerIcon className="w-4 h-4 text-muted-foreground" />
           <Link
             to={`/containers/${container.ID}`}
-            className="hover:underline font-medium"
+            className="font-medium"
           >
             {container.Name[0].split("/")[1]}
           </Link>
@@ -88,9 +80,6 @@ const Overview = () => {
     ));
   };
 
-  /**
-   * Renders a list of up to 5 images with their size information
-   */
   const renderImagesList = () => {
     if (images.length === 0) {
       return (
@@ -98,14 +87,12 @@ const Overview = () => {
           No images found
         </div>
       );
-    }
-
-    return images.slice(0, 5).map((image) => (
+    }    return images.slice(0, 5).map((image) => (
       <div
         key={image.id}
-        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0 hover:bg-gray-100"
+        className="flex items-center justify-between py-3 px-4 border-b border-border last:border-0 hover:bg-accent/50"
       >
-        <Link to={`images/${image.id}`}>
+        <Link to={`images/${image.id}`} className="flex-1">
           <div className="flex items-center space-x-3">
             <Layers className="w-4 h-4 text-muted-foreground" />
             <span className="font-medium">
@@ -124,92 +111,123 @@ const Overview = () => {
     ));
   };
 
+  // Quick stats calculation
+  const stats = {
+    totalContainers: containers.length,
+    runningContainers: containers.filter(c => c.State === "running").length,
+    stoppedContainers: containers.filter(c => c.State === "exited").length,
+    totalImages: images.length,
+  };
+
   return (
     <div className="animate-fade-in space-y-6">
-      {/* System Information Section */}
-      <SystemInfo />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Containers Section */}
-        <div className="border border-border rounded-md">
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center space-x-2">
-              <Box className="w-4 h-4 text-muted-foreground" />
-              <h2 className="font-bold">Containers</h2>
+      {/* Stats Overview */}      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-card p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-4">            <div className="p-2 bg-accent/50 rounded-lg">
+              <ContainerIcon className="w-5 h-5 text-muted-foreground" />
             </div>
-            <Link
-              to="/containers"
-              className="text-sm text-muted-foreground hover:text-foreground flex items-center"
-            >
-              View all
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-          <div className="divide-y divide-border">
-            {isLoading
-              ? <LoadingSkeleton count={3} />
-              : error
-              ? (
-                <div className="p-4 text-destructive bg-card">
-                  Failed to load containers
-                </div>
-              )
-              : (
-                renderContainersList()
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground">Total Containers</p>
+              <p className="text-2xl font-bold">{stats.totalContainers}</p>
+            </div>
           </div>
         </div>
-
-        {/* Images Section */}
-        <div className="border border-border rounded-md">
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center space-x-2">
-              <HardDrive className="w-4 h-4 text-muted-foreground" />
-              <h2 className="font-bold">Images</h2>
+        <div className="bg-card p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-4">
+            <div className="p-2 bg-accent/50 rounded-lg">
+              <Activity className="w-5 h-5 text-muted-foreground" />
             </div>
-            <Link
-              to="/images"
-              className="text-sm text-muted-foreground hover:text-foreground flex items-center"
-            >
-              View all
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
+            <div>
+              <p className="text-sm text-muted-foreground">Running</p>
+              <p className="text-2xl font-bold">{stats.runningContainers}</p>
+            </div>
           </div>
-          <div className="divide-y divide-border">
-            {isLoading
-              ? <LoadingSkeleton count={3} />
-              : error
-              ? <div className="p-4 text-destructive bg-card">Failed to load images</div>
-              : (
-                renderImagesList()
-              )}
+        </div>
+        <div className="bg-card p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-4">
+            <div className="p-2 bg-accent/50 rounded-lg">
+              <Pause className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Stopped</p>
+              <p className="text-2xl font-bold">{stats.stoppedContainers}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-card p-4 rounded-lg border border-border">
+          <div className="flex items-center space-x-4">            <div className="p-2 bg-accent/50 rounded-lg">
+              <Box className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Images</p>
+              <p className="text-2xl font-bold">{stats.totalImages}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Resource Usage Section */}
-      <div className="border border-border rounded-md">
-        <div className="flex items-center space-x-2 p-4 border-b border-border">
-          <Activity className="w-4 h-4 text-muted-foreground" />
-          <h2 className="font-bold">Resource Usage</h2>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Active Containers */}
+        <div className="border border-border rounded-lg">
+          <div className="flex items-center justify-between p-4 border-b border-border bg-card/50">
+            <div className="flex items-center space-x-2">
+              <ContainerIcon className="w-4 h-4 text-muted-foreground" />
+              <h2 className="font-bold">Active Containers</h2>
+            </div>
+            <Link
+              to="/containers"
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+            >
+              View all
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="divide-y divide-border">
+            {isLoading ? (
+              <LoadingSkeleton count={3} />
+            ) : error ? (
+              <div className="p-4 text-destructive bg-card">Failed to load containers</div>
+            ) : (
+              renderContainersList()
+            )}
+          </div>
         </div>
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ResourceCard
-              icon={Database}
-              title="Memory Usage"
-              isLoading={isLoading}
-            />
-            <ResourceCard
-              icon={Activity}
-              title="CPU Usage"
-              isLoading={isLoading}
-            />
-            <ResourceCard
-              icon={HardDrive}
-              title="Disk Usage"
-              isLoading={isLoading}
-            />
+
+        {/* Recent Images */}
+        <div className="border border-border rounded-lg">
+          <div className="flex items-center justify-between p-4 border-b border-border bg-card/50">
+            <div className="flex items-center space-x-2">
+              <Layers className="w-4 h-4 text-muted-foreground" />
+              <h2 className="font-bold">Recent Images</h2>
+            </div>
+            <Link
+              to="/images"
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+            >
+              View all
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="divide-y divide-border">
+            {isLoading ? (
+              <LoadingSkeleton count={3} />
+            ) : error ? (
+              <div className="p-4 text-destructive bg-card">Failed to load images</div>
+            ) : (
+              renderImagesList()
+            )}
+          </div>
+        </div>
+
+        {/* Container Events */}
+        <div className="border border-border rounded-lg lg:col-span-2">
+          <div className="flex items-center space-x-2 p-4 border-b border-border bg-card/50">
+            <CircleSlash className="w-4 h-4 text-muted-foreground" />
+            <h2 className="font-bold">Recent Events</h2>
+          </div>
+          <div className="p-4 h-48 flex items-center justify-center text-muted-foreground">
+            Container events will be shown here...
           </div>
         </div>
       </div>

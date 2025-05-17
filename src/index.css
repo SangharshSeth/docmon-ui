@@ -1,94 +1,108 @@
-<<<<<<< HEAD
-=======
 @import '@fontsource/jetbrains-mono/300.css';
 @import '@fontsource/jetbrains-mono/400.css';
 @import '@fontsource/jetbrains-mono/500.css';
 @import '@fontsource/jetbrains-mono/600.css';
 @import '@fontsource/jetbrains-mono/700.css';
 
->>>>>>> 1fcd83c (refactor: clean ups)
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 220 25% 15%;
-    --foreground: 0 0% 90%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
 
-    --card: 220 20% 20%;
-    --card-foreground: 0 0% 90%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 10%;
 
-    --popover: 223 19% 18%;
-    --popover-foreground: 0 0% 90%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 14 75% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 222 13% 20%;
-    --secondary-foreground: 0 0% 90%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 222 13% 20%;
-    --muted-foreground: 0 0% 64%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 225 27% 25%;
-    --accent-foreground: 214 100% 87%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 225 13% 28%;
-    --input: 225 13% 28%;
-    --ring: 14 75% 55%;
-
-    --radius: 0.75rem;
-
-    /* Sidebar specific colors */
-    --sidebar: 222 15% 21%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-border: 225 13% 28%;
-    --sidebar-primary: 14 75% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 27% 25%;
-    --sidebar-accent-foreground: 214 100% 87%;
-    --sidebar-ring: 14 75% 55%;
-
-    /* Chart colors */
-    --chart-1: 214 34% 66%;
-    --chart-2: 14 55% 73%;
-    --chart-3: 214 29% 50%;
-    --chart-4: 219 34% 43%;
-    --chart-5: 219 43% 35%;
-  }
-
-  .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 98%;
-
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 5%;
-
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 9%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 40%;
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 0 0% 70%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar specific colors */
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 89%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-ring: 0 0% 70%;
+
+    /* Chart colors */
+    --chart-1: 0 0% 75%;
+    --chart-2: 0 0% 60%;
+    --chart-3: 0 0% 45%;
+    --chart-4: 0 0% 30%;
+    --chart-5: 0 0% 15%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;  /* #121212 */
+    --foreground: 0 0% 100%;  /* #ffffff */
+
+    --card: 0 0% 12%;  /* #1e1e1e */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 12%;  /* #1e1e1e */
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 0 0% 100%;  /* #ffffff */
+    --primary-foreground: 0 0% 7%;  /* #121212 */
+
+    --secondary: 0 0% 12%;  /* #1e1e1e */
+    --secondary-foreground: 0 0% 63%;  /* #a0a0a0 */
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 63%;  /* #a0a0a0 */
+
+    --accent: 0 0% 16%;  /* #292929 */
+    --accent-foreground: 0 0% 100%;  /* #ffffff */
+
+    --destructive: 0 84% 60%;  /* keeping red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 16%;  /* #2a2a2a */
+    --input: 0 0% 16%;  /* #2a2a2a */
+    --ring: 0 0% 20%;   /* #333333 */
+
+    /* Sidebar specific colors */
+    --sidebar: 0 0% 9%;  /* #161616 */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 16%;  /* #2a2a2a */
+    --sidebar-primary: 0 0% 100%;  /* #ffffff */
+    --sidebar-primary-foreground: 0 0% 7%;  /* #121212 */
+    --sidebar-accent: 0 0% 14%;  /* #242424 */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-ring: 0 0% 20%;  /* #333333 */
+
+    /* Chart colors - using a more subtle monochromatic scheme */
+    --chart-1: 0 0% 85%;  /* #d9d9d9 */
+    --chart-2: 0 0% 70%;  /* #b3b3b3 */
+    --chart-3: 0 0% 55%;  /* #8c8c8c */
+    --chart-4: 0 0% 40%;  /* #666666 */
+    --chart-5: 0 0% 25%;  /* #404040 */
   }
 }
 
